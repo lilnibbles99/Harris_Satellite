@@ -59,3 +59,11 @@
 #find average positions of star blobs
 #coordinate output
 
+
+
+
+
+#6248*4176 resolution
+#target 3840*2160 resolution
+#16 bit depth
+#target 8 bit depth?

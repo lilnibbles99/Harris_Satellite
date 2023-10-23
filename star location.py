@@ -1,7 +1,9 @@
-import camera
 
+import requests
+import json
 
-#https://csatlas.com/python-import-file-module/
+R = requests.post('http://nova.astrometry.net/api/login', data={'request-json': json.dumps({"apikey": "lhgseqmicalgnwvs"})})
 
+#https://astrometry.net/doc/net/api.html
+#done through api (sadly)
 
-camera.take_image()

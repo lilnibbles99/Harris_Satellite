@@ -29,7 +29,7 @@ y_coords = np.array([])
 
 with fits.open("C:/Users/thegr/Desktop/WORK/year3/python data/SATELLITES/2023-01-13-1830_7-CapObj_0026.FIT") as hdu:
     image = hdu[0].data
-image = cv2.resize(image, dsize=(1920,1080), interpolation=cv2.INTER_CUBIC)
+image = cv2.resize(image, dsize=(3840,2160), interpolation=cv2.INTER_CUBIC)
 image = (image/256).astype(np.uint8)
 
 cv2.imshow("image", image)
