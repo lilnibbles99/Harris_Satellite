@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 from skimage.feature import blob_log
 import flat_field
-import camera
+#import camera
 
 ####Edit these ones
 
@@ -38,7 +38,7 @@ cv2.destroyAllWindows()
 
 ####For flat field correction
 
-average = flat_field.correction()
+#average = flat_field.correction()
 
 ####For automatic thresholding
 

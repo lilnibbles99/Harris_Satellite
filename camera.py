@@ -37,13 +37,6 @@ camera.capture(filename="imagetest")
 
 
 
-
-
-
-
-
-
-
 #camera.isOpened()
 #camera.read()
 
