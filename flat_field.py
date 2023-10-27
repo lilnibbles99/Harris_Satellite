@@ -4,6 +4,10 @@
 ####This is for the bright field
 ####This needs images of even brightness to calibrate
 
+from images import dark
+for file in dark:
+    
+
 def correction():
     import cv2
     import numpy as np
