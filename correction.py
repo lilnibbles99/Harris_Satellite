@@ -16,13 +16,13 @@ import numpy as np
 
 path_dark = str(Path(__file__))[:-(len(Path(__file__).name)+1)]+str("\\images\\dark\\") #this line took so long to write its stupid
 filenames_dark = next(walk(path_dark),(None,None,[]))[2]
-file_number_dark = 0
+#file_number_dark = 0
 
 
 
-path_flat = str(Path(__file__))[:-(len(Path(__file__).name)+1)]+str("\\images\\light\\") #this line took so long to write its stupid
+path_flat = str(Path(__file__))[:-(len(Path(__file__).name)+1)]+str("\\images\\light\\")
 filenames_flat = next(walk(path_flat),(None,None,[]))[2]
-file_number_flat = 0
+#file_number_flat = 0
 
 
 
@@ -44,28 +44,39 @@ def get_image_flat(path_flat,filenames_flat,file_number_flat):
 
 
 
-def correction_dark():
-    import cv2
-    import numpy as np
-    import os
-
-    directory = ""
-
-    files = [os.path.join(directory, f) for f in os.listdir(directory) if f.endswith('.FIT')]
-
+def correction_dark(path_dark,filenames_dark):
     accumulated = None
-
-    for images in files:
-        image = cv2.imread(images)
+    for i in range(len(filenames_dark)):
+        dark_image = get_image_dark(path_dark,filenames_dark,i)
         if accumulated is None:
-            accumulated = np.zeros_like(image, dtype=np.float16)
-        accumulated += image
+            accumulated = np.zeros_like(dark_image, dtype=np.float16)
+        accumulated += dark_image
 
-    average = accumulated/len(files)
+    average = accumulated/len(filenames_dark)
     average = np.uint16(average)
-    cv2.imwrite("average.jpg",average)
+    cv2.imshow("average dark",average)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
     return average
 
-####This code is for the dark field
+
+
+def correction_flat(path_flat,filenames_flat):
+    accumulated = None
+    for i in range(len(filenames_dark)):
+        flat_image = get_image_flat(path_flat,filenames_flat,i)
+        if accumulated is None:
+            accumulated = np.zeros_like(flat_image, dtype=np.float16)
+        accumulated += flat_image
+
+    average = accumulated/len(filenames_flat)
+    average = np.uint16(average)
+    cv2.imshow("average flat",average)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    return average
+
+correction_dark(path_dark,filenames_dark)
+correction_flat(path_flat,filenames_flat)
 
 

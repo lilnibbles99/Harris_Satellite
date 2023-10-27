@@ -5,7 +5,7 @@ from astropy.io import fits
 import cv2
 import numpy as np
 from skimage.feature import blob_log
-import flat_field
+import correction
 #import camera
 
 ####Edit these ones
