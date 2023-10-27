@@ -1,48 +1,50 @@
 
 #https://helpx.adobe.com/uk/lightroom-classic/help/flat-field-correction.html
 
-####This is for the bright field
+####This is for the dark images
 ####This needs images of even brightness to calibrate
+
 
 
 import cv2
 from os import walk
-from os.path import isfile, join
 from pathlib import Path
 from astropy.io import fits
 import numpy as np
 
 
-path = Path(str(Path(__file__))[:-(len(Path(__file__).name)+1)]+str("\\images\\dark\\")) #this line took so long to write its stupid
-filenames = next(walk(path),(None,None,[]))[2]
-for i in range(len(filenames)):
-    with fits.open("C:/Users/thegr/Desktop/WORK/year3/python data/SATELLITES/2023-01-13-1830_7-CapObj_0026.FIT") as hdu:
+
+path_dark = str(Path(__file__))[:-(len(Path(__file__).name)+1)]+str("\\images\\dark\\") #this line took so long to write its stupid
+filenames_dark = next(walk(path_dark),(None,None,[]))[2]
+file_number_dark = 0
+
+
+
+path_flat = str(Path(__file__))[:-(len(Path(__file__).name)+1)]+str("\\images\\light\\") #this line took so long to write its stupid
+filenames_flat = next(walk(path_flat),(None,None,[]))[2]
+file_number_flat = 0
+
+
+
+def get_image_dark(path_dark,filenames_dark,file_number_dark):
+    with fits.open(Path(path_dark+str(filenames_dark[file_number_dark]))) as hdu:
         image = hdu[0].data
         image = cv2.resize(image, dsize=(3840, 2160), interpolation=cv2.INTER_CUBIC)
         image = (image / 256).astype(np.uint8)
-
-        cv2.imshow(image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-
-
-#path = Path(__file__).with_name("Dark_ASIImg_0sec_Bin1_1.4C_gain0_2023-10-23_151042_frame0008.fit")
-#with path.open("r") as file:
-#    print(file.read())
-#files = open(os.path.join("images"))
-#print("-------")
-#print(os.path.join("images"))
-
-#for file in files:
-#    image = cv2.imread(file)
-#    cv2.imshow(image)
-#    cv2.waitkey(0)
-#    cv2.destroyAllWindows()
+        return image
 
 
 
+def get_image_flat(path_flat,filenames_flat,file_number_flat):
+    with fits.open(Path(path_flat+str(filenames_flat[file_number_flat]))) as hdu:
+        image = hdu[0].data
+        image = cv2.resize(image, dsize=(3840, 2160), interpolation=cv2.INTER_CUBIC)
+        image = (image / 256).astype(np.uint8)
+        return image
 
-def correction():
+
+
+def correction_dark():
     import cv2
     import numpy as np
     import os
