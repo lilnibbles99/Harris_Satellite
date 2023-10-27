@@ -1,8 +1,7 @@
 
-#https://helpx.adobe.com/uk/lightroom-classic/help/flat-field-correction.html
 
-####This is for the dark images
-####This needs images of even brightness to calibrate
+
+#https://helpx.adobe.com/uk/lightroom-classic/help/flat-field-correction.html
 
 
 
