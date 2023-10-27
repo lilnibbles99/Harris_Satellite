@@ -13,16 +13,16 @@ from astropy.io import fits
 import numpy as np
 
 
+def get_dark():
+    path_dark = str(Path(__file__))[:-(len(Path(__file__).name)+1)]+str("\\images\\dark\\") #this line took so long to write its stupid
+    filenames_dark = next(walk(path_dark),(None,None,[]))[2]
+    return path_dark, filenames_dark
 
-path_dark = str(Path(__file__))[:-(len(Path(__file__).name)+1)]+str("\\images\\dark\\") #this line took so long to write its stupid
-filenames_dark = next(walk(path_dark),(None,None,[]))[2]
-#file_number_dark = 0
 
-
-
-path_flat = str(Path(__file__))[:-(len(Path(__file__).name)+1)]+str("\\images\\light\\")
-filenames_flat = next(walk(path_flat),(None,None,[]))[2]
-#file_number_flat = 0
+def get_flat():
+    path_flat = str(Path(__file__))[:-(len(Path(__file__).name)+1)]+str("\\images\\light\\")
+    filenames_flat = next(walk(path_flat),(None,None,[]))[2]
+    return path_flat, filenames_flat
 
 
 
@@ -63,7 +63,7 @@ def correction_dark(path_dark,filenames_dark):
 
 def correction_flat(path_flat,filenames_flat):
     accumulated = None
-    for i in range(len(filenames_dark)):
+    for i in range(len(filenames_flat)):
         flat_image = get_image_flat(path_flat,filenames_flat,i)
         if accumulated is None:
             accumulated = np.zeros_like(flat_image, dtype=np.float16)
@@ -76,7 +76,5 @@ def correction_flat(path_flat,filenames_flat):
     cv2.destroyAllWindows()
     return average
 
-correction_dark(path_dark,filenames_dark)
-correction_flat(path_flat,filenames_flat)
 
 

@@ -1,3 +1,4 @@
+import correction
 
 #take image:
 #no input
@@ -15,11 +16,13 @@
 #image output
 
 #apply correction for dark:
+correction.correction_dark(correction.get_dark()[0],correction.get_dark()[1])
 #image input
 #multiply by correction factor
 #image output
 
 #apply correction for light:
+correction.correction_flat(correction.get_flat()[0],correction.get_flat()[1])
 #image input
 #multiply by correction factor
 #image output
