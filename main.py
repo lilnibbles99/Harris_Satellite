@@ -35,20 +35,43 @@ image = (image/256).astype(np.uint8)
 
 cv2.imshow("image", image)
 cv2.waitKey(0)
-cv2.destroyAllWindows()
+#cv2.destroyAllWindows()
 
 ####For flat field correction
 
-#average = flat_field.correction()
+average_flat = correction.correction_flat(correction.get_flat()[0],correction.get_flat()[1])
+#temp = (average_flat / 256).astype(np.uint8)
+#cv2.imshow("flat",temp)
+#print(cv2.minMaxLoc(temp))
+#cv2.waitKey(0)
+#cv2.destroyAllWindows()
+#image = image / (average_flat/255)
+
+####For dark field correction
+
+average_dark = correction.correction_dark(correction.get_dark()[0],correction.get_dark()[1])
+#image = image / (average_dark/255)
+
+#(minVal, maxVal, minLoc, maxLoc) =
+#print(cv2.minMaxLoc(average_flat))
+#print(cv2.minMaxLoc(average_dark))
+#print(cv2.minMaxLoc(image))
+
+cv2.imshow("corrected image",image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
 
 ####For automatic thresholding
 
-####Processing the image to only caring about the boundaries of the shapes
-
 threshold, im_bw = cv2.threshold(image, threshold1, 255, cv2.THRESH_TOZERO)
-cv2.imshow("im_bw",im_bw)
+cv2.imshow("corrected image",im_bw)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
+
+####Processing the image to only caring about the boundaries of the shapes
+
+
+
 edges = cv2.Canny(im_bw,edge1,edge2, apertureSize = 3)
 new_image = im_bw
 cv2.destroyAllWindows()
