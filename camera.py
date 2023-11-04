@@ -1,15 +1,16 @@
 
+import cv2
+def number_of_devices():
+    i = 0
+    while True:
+        camera = cv2.VideoCapture(i)
+        if not camera.isOpened():
+            break
+        else:
+            print(i)
+            i += 1
 
-
-
-
-
-
-
-
-
-
-
+number_of_devices()
 
 
 
@@ -30,19 +31,24 @@ def take_image():
     return image
 
 
+take_image()
 
 
 
-import zwoasi as asi
+
+
+
+
+#import zwoasi as asi
 #import time
 
-cameras_found = asi.list_cameras()
-camera = asi.Camera()
-camera = asi._init_camera()
-camera.get_camera_property()
-camera.set_image_type(asi.ASI_IMG_RAW16)
-camera.set_control_value(asi.ASI_EXPOSURE, 30)
-camera.capture(filename="imagetest")
+#cameras_found = asi.list_cameras()
+#camera = asi.Camera()
+#camera = asi._init_camera()
+#camera.get_camera_property()
+#camera.set_image_type(asi.ASI_IMG_RAW16)
+#camera.set_control_value(asi.ASI_EXPOSURE, 30)
+#camera.capture(filename="imagetest")
 #save_control_values(filename="values", camera.get_control_values())
 #camera.start_exposure()
 #time.sleep(3)
@@ -76,7 +82,7 @@ camera.capture(filename="imagetest")
 #camera.set_control_value(asi.ASI_FLIP, 0)
 #camera.start_video_capture()
 #camera.stop_video_capture()
-##camera.capture(filename=filename)
+#camera.capture(filename=filename)
 #time.sleep(sleep_interval)
 #settings = camera.get_control_values()
 #df = camera.get_dropped_frames()

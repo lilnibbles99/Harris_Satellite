@@ -10,10 +10,10 @@ import correction
 
 ####Edit these ones
 
-threshold1 = 80 #150
+threshold1 = 20/256 #150
 threshold2 = 100 #100
-edge1 = 50 #50
-edge2 =  150 #150
+edge1 = 50/256 #50
+edge2 =  150/256 #150
 minlinelength = 5 #150
 maxlinegap = 50  #5
 threshold3 = 0.1 #0.1
@@ -27,7 +27,7 @@ y_coords = np.array([])
 
 #image = camera.take_image()
 
-with fits.open("C:/Users/thegr/Desktop/WORK/year3/python data/SATELLITES/2023-01-13-1830_7-CapObj_0026.FIT") as hdu:
+with fits.open("C:/Users/thegr/Desktop/WORK/year3/python data/SATELLITES/1.FIT") as hdu:
     image = hdu[0].data
 #3840,2160
 image = cv2.resize(image, dsize=(1920,1080), interpolation=cv2.INTER_CUBIC)
@@ -38,27 +38,30 @@ cv2.waitKey(0)
 cv2.destroyAllWindows()
 
 ####For flat field correction
-
-average_flat = correction.correction_flat(correction.get_flat()[0],correction.get_flat()[1])
-average_flat = (average_flat - (cv2.minMaxLoc(average_flat))[0])/256
-image = image/256 - average_flat
-cv2.imshow("flat",image)
+run = True
+if run == True:
+    average_flat = correction.correction_flat(correction.get_flat()[0],correction.get_flat()[1])
+    average_flat = (average_flat - (cv2.minMaxLoc(average_flat))[0])/256
+    image = image/256 - average_flat
+    cv2.imshow("flat",image)
 
 ####For dark field correction
-
-average_dark = correction.correction_dark(correction.get_dark()[0],correction.get_dark()[1])
-average_dark = (average_dark - (cv2.minMaxLoc(average_dark))[0])/256
-print(cv2.minMaxLoc(average_dark))
-image = image - average_dark
-cv2.imshow("dark + flat",image)
+run = False
+if run == True:
+    average_dark = correction.correction_dark(correction.get_dark()[0],correction.get_dark()[1])
+    average_dark = (average_dark - (cv2.minMaxLoc(average_dark))[0])/256
+    print(cv2.minMaxLoc(average_dark))
+    image = image - average_dark
+    cv2.imshow("dark + flat",image)
 
 ####Making sure no pixels are negative
-
-image += cv2.minMaxLoc(image)[0]
-#(minVal, maxVal, minLoc, maxLoc) = cv2.minMaxLoc()
-cv2.imshow("corrected image",image)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+run = False
+if run == True:
+    image += cv2.minMaxLoc(image)[0]
+    #(minVal, maxVal, minLoc, maxLoc) = cv2.minMaxLoc()
+    cv2.imshow("corrected image",image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 ####For automatic thresholding
 
@@ -68,8 +71,6 @@ cv2.waitKey(0)
 cv2.destroyAllWindows()
 
 ####Processing the image to only caring about the boundaries of the shapes
-
-
 
 edges = cv2.Canny(im_bw, edge1, edge2, apertureSize = 3)
 new_image = im_bw
