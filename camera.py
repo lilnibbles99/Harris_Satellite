@@ -1,5 +1,18 @@
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 ####This should work for the camera
 
 def take_image():
