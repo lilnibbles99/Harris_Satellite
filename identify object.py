@@ -1,7 +1,7 @@
 ### Identifying the object in orbit using TLEs
 
 # Importing the necessary libraries
-from satellitetle import fetch  # "pip install satellitetle"
+from satellite_tle import fetch  # "pip install satellitetle"
 from difflib import SequenceMatcher as sm   # "pip install python-Levenshtein"
 from tletools import TLE  # "pip install TLE-tools"
 
