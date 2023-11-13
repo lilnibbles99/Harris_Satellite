@@ -1,88 +1,207 @@
+'''
+Module for controlling ZWO ASI CMOS cameras, designed to mimic andor.py
+such that the two are easily interchangable for the scidar.
 
-import cv2
-def number_of_devices():
-    i = 0
-    while True:
-        camera = cv2.VideoCapture(i)
-        if not camera.isOpened():
-            break
+Check andor.py for docstrings etc.
+
+Ollie Farley, CfAI 2019
+'''
+
+'''
+First you need to install the sdk from here under the "Developers” section here: https://astronomy-imaging-camera.com/software-drivers
+Then get the python bindings from here: https://github.com/stevemarple/python-zwoasi
+Once both of those are installed, you should be able to import zwoasi (it may show an error about not finding the SDK, ignore it).
+You then need to set the ASI_LIB attribute in zwo.py to point to the correct
+path (from the ZWO SDK install), which should be a .so, .dylib or .dll depending on platform.
+If it is working, you should be able to get frames from a camera with something like the following:
+
+import zwo
+Z = zwo.ZWO()
+Z.setup_sequence(exposure_time, EMgain=gain, nframes=N)
+frames = Z.snap_sequence()
+
+
+Note that some variable names (e.g. EMgain) don't really make sense in the context of this camera but are
+kept the same to ensure compatibility with old code.
+'''
+import zwoasi as asi
+import numpy
+import time
+
+ASI_LIB = "/usr/local/lib/libASICamera2.so"
+
+
+class defaultParams:
+    '''Default parameters for ZWO cameras'''
+
+    asiLib = ASI_LIB
+    hasShutter = 0
+    operatingTemp = None
+
+    def barf(self):
+        raise NotImplementedError('This function not yet implemented')
+
+
+class ZWO():
+
+    def __init__(self, params=defaultParams):
+        self.params = params
+        asi.init(self.params.asiLib)
+
+        self.nCameras = asi.get_num_cameras()
+        if self.nCameras == 0:
+            raise Exception('No cameras found')
+
+        self.cameraModels = asi.list_cameras()
+
+        self.cameras = []
+        self.cameraInfo = []
+        for i in range(self.nCameras):
+            c = asi.Camera(i)
+            self.cameras.append(c)
+            self.cameraInfo.append(c.get_camera_property())
+
+        if self.params.operatingTemp != None:
+            self.cooler_on(self.params.operatingTemp)
+
+        if self.params.hasShutter != 0:
+            self.shutter_open()
+
+    def shutter_open(self):
+        raise NotImplementedError('This function not yet implemented')
+
+    def shutter_close(self):
+        raise NotImplementedError('This function not yet implemented')
+
+    def cooler_on(self, temp):
+        for c in self.cameras:
+            try:
+                c.set_control_value(asi.ASI_COOLER_ON, 1)
+                c.set_control_value(asi.ASI_TARGET_TEMP, temp)
+            except Exception as e:
+                self.handle_error(e)
+
+    def cooler_off(self):
+        for c in self.cameras:
+            try:
+                c.set_control_value(asi.ASI_COOLER_ON, 0)
+            except Exception as e:
+                self.handle_error(e)
+
+    def set_temp(self, temp):
+        for c in cameras:
+            try:
+                c.set_control_value(asi.ASI_TARGET_TEMP, temp)
+            except Exception as e:
+                self.handle_error(e)
+
+    def temp(self, internal=0):
+        if self.nCameras == 1:
+            return self.cameras[0].get_control_value(asi.ASI_TEMPERATURE)[0] / 10.
         else:
-            print(i)
-            i += 1
+            return [c.get_control_value(asi.ASI_TEMPERATURE)[0] / 10. for c in self.cameras]
 
-number_of_devices()
+    def shutdown(self, safe_temp=0.):
+        # Note we ignore safe_temp for now
+        for c in self.cameras:
+            try:
+                print('Shutting down cameras')
+                c.close()
+            except Exception as e:
+                self.handle_error(e)
+
+    def setup_common(self, roiList):
+        # Note that we can't bin separately in x and y as for andor cameras, so we use
+        # only the x value
+        try:
+            if roiList != None:
+                if len(roiList) == self.nCameras:
+                    for iroi in range(len(roiList)):
+                        xBin, yBin, xLo, xHi, yLo, yHi = roiList[iroi]
+
+                        if (xHi - xLo + 1) % xBin == 0:
+                            self.xDim = (xHi - xLo + 1) / xBin  # x-dimension
+                        else:
+                            raise 'ROI x-dimension must be a multiple of x binning value'
+                        if (yHi - yLo + 1) % yBin == 0:
+                            self.yDim = (yHi - yLo + 1) / yBin  # y-dimension
+                        else:
+                            raise 'ROI y-dimension must be a multiple of y binning value'
+                        try:
+                            self.cameras[iroi].set_roi(start_x=xLo, start_y=yLo, width=self.xDim, height=self.yDim,
+                                                       bins=xBin)
+                        except ValueError as e:
+                            print(e)
+                else:
+                    xBin, yBin, xLo, xHi, yLo, yHi = roiList[0]
+
+                    if (xHi - xLo + 1) % xBin == 0:
+                        self.xDim = (xHi - xLo + 1) / xBin  # x-dimension
+                    else:
+                        raise 'ROI x-dimension must be a multiple of x binning value'
+                    if (yHi - yLo + 1) % yBin == 0:
+                        self.yDim = (yHi - yLo + 1) / yBin  # y-dimension
+                    else:
+                        raise 'ROI y-dimension must be a multiple of y binning value'
+                    for c in self.cameras:
+                        try:
+                            c.set_roi(start_x=xLo, start_y=yLo, width=self.xDim - 1, height=self.yDim - 1, bins=xBin)
+                        except ValueError as e:
+                            print(e)
+            else:
+                self.xDim, self.yDim = self.cameras[0].get_roi()[-2:]
+        except Exception as e:
+            self.handle_error(e)
+
+    def setup_image(self):
+        raise NotImplementedError('This function not yet implemented')
+
+    def snap_image(self):
+        raise NotImplementedError('This function not yet implemented')
+
+    def setup_sequence(self, exp_time, EMgain=0, roiList=None, nframes=10):
+        try:
+            self.nframes = nframes
+            self.setup_common(roiList)
+            for i, c in enumerate(self.cameras):
+                exp_time_us = int(exp_time * 1e6)  # integer microseconds used in zwo cameras
+                c.set_control_value(asi.ASI_EXPOSURE, exp_time_us)
+                if type(EMgain) is list:
+                    c.set_control_value(asi.ASI_GAIN, EMgain[i])
+                else:
+                    c.set_control_value(asi.ASI_GAIN, EMgain)
+                c.sequenceData = numpy.empty((self.nframes, self.yDim, self.xDim))
+                c.sequenceDataSize = self.nframes * self.yDim * self.xDim
+            return exp_time, -1, -1  # accumulation time and kinetic time we dont get from the sdk so just return -1
+        except Exception as e:
+            self.handle_error(e)
+
+    def externalTrigger(self):
+        raise NotImplementedError('This function not yet implemented')
+
+    def snap_sequence(self, timeout=10., timestamp=0):
+        try:
+            # NOTE THIS WILL NOT WORK FOR MORE THAN ONE CAMERA!!!
+            startTime = time.time()
+            timeout = int(timeout * 1e3)  # timeout in ms not seconds
+            c = self.cameras[0]
+            c.start_video_capture()
+            for i in range(self.nframes):
+                c.sequenceData[i] = c.capture_video_frame(timeout=timeout)
+            dropped_frames = c.get_dropped_frames()
+            c.stop_video_capture()
+            if timestamp > 0:
+                return c.sequenceData, startTime
+            else:
+                return c.sequenceData
+        except Exception as e:
+            self.handle_error(e)
+
+    def handle_error(self, e):
+        print('ASI camera error!')
+        print(e)
+        print('Shutting down the camera(s) now')
+        self.shutdown()
 
 
-
-####This should work for the camera
-
-def take_image():
-    import cv2
-    exposure_time = 10000 #in ms
-    camera = cv2.VideoCapture(0)
-    print(camera.isOpened())
-    camera.set(cv2.CAP_PROP_EXPOSURE, exposure_time)
-    print(camera.get(cv2.CAP_PROP_EXPOSURE))
-    stat, image = camera.read()
-    if stat == True:
-        cv2.imshow("image",image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-    return image
-
-
-take_image()
-
-
-
-
-
-
-
-#import zwoasi as asi
-#import time
-
-#cameras_found = asi.list_cameras()
-#camera = asi.Camera()
-#camera = asi._init_camera()
-#camera.get_camera_property()
-#camera.set_image_type(asi.ASI_IMG_RAW16)
-#camera.set_control_value(asi.ASI_EXPOSURE, 30)
-#camera.capture(filename="imagetest")
-#save_control_values(filename="values", camera.get_control_values())
-#camera.start_exposure()
-#time.sleep(3)
-#camera.stop_exposure()
-
-
-
-#camera.isOpened()
-#camera.read()
-
-#cv2.CAP_PROP_FRAME_WIDTH
-#cv2.CAP_PROP_FRAME_HEIGHT
-#cv2.CAP_PROP_FPS
-#cv2.CAP_PROP_AUTOFOCUS
-#cv2.CAP_PROP_BRIGHTNESS
-#cv2.CAP_PROP_CONTRAST
-#cv2.CAP_PROP_SATURATION
-#cv2.CAP_PROP_HUE
-#cv2.CAP_PROP_GAIN
-
-#num_cameras = asi.get_num_cameras()
-#asi.Camera(camera_id)
-#controls = camera.get_controls()
-#camera.set_control_value(asi.ASI_BANDWIDTHOVERLOAD, camera.get_controls()['BandWidth']['MinValue'])
-#camera.disable_dark_subtract()
-#camera.set_control_value(asi.ASI_GAIN, 150)
-##camera.set_control_value(asi.ASI_WB_B, 99)
-#camera.set_control_value(asi.ASI_WB_R, 75)
-#camera.set_control_value(asi.ASI_GAMMA, 50)
-#camera.set_control_value(asi.ASI_BRIGHTNESS, 50)
-#camera.set_control_value(asi.ASI_FLIP, 0)
-#camera.start_video_capture()
-#camera.stop_video_capture()
-#camera.capture(filename=filename)
-#time.sleep(sleep_interval)
-#settings = camera.get_control_values()
-#df = camera.get_dropped_frames()
+ZWO()

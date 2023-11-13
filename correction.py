@@ -74,6 +74,7 @@ def correction_flat(path_flat,filenames_flat):
     average = np.uint8(average)
     average = cv2.resize(average, dsize=(1920, 1080), interpolation=cv2.INTER_CUBIC)
     #average = (average / 256).astype(np.uint8)
+    #average = (average - (cv2.minMaxLoc(average)[1] - cv2.minMaxLoc(average)[0]))/255
     #cv2.imshow("average flat",average)
     #cv2.waitKey(0)
     #cv2.destroyAllWindows()
